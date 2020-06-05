@@ -11,9 +11,9 @@ import org.bukkit.event.player.PlayerMoveEvent
 class DelayListener(private val settings: CustomSettings) : Listener {
 
     @EventHandler
-    fun onPlayerMove(event: PlayerMoveEvent) {
-        if (event.from.blockX != event.to?.blockX || event.from.blockZ != event.to?.blockZ || event.from.blockY != event.to?.blockY) {
-            val user = RealmsAPI.getUser(event.player)
+    fun PlayerMoveEvent.onPlayerMove() {
+        if (from.blockX != to?.blockX || from.blockZ != to?.blockZ || from.blockY != to?.blockY) {
+            val user = RealmsAPI.getUser(player)
             val task = RTPCommand.delays[user.uuid] ?: return
             task.cancel()
             RTPCommand.delays.remove(user.uuid)

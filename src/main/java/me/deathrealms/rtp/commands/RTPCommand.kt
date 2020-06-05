@@ -54,17 +54,17 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
                         .replace("%delay%", settings.getProperty(Config.DELAY_TIME).toString())
                 )
                 delays[user.uuid] = RealmsAPI.runTask(false, {
-                    teleportPlayer(user, location)
+                    user.teleportTo(location)
                     delays.remove(user.uuid)
                 }, (settings.getProperty(Config.DELAY_TIME) * 20).toLong())
                 return
             }
         }
 
-        teleportPlayer(user, location)
+        user.teleportTo(location)
     }
 
-    private fun teleportPlayer(user: User, location: Location) {
+    private fun User.teleportTo(location: Location) {
         user.teleport(LocationUtils.getCenteredLocation(location.add(0.0, 1.0, 0.0)))
         user.sendMessage(
             settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_SUCCESSFUL)
