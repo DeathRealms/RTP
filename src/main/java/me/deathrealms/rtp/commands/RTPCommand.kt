@@ -25,11 +25,23 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     @Default
     @Permission("rtp.use")
     fun rtpCommand(user: User) {
+        var failed = false
         var isSafe = false
         var location = getRandomLocation(user.location)
+        val timeout = System.currentTimeMillis() + Utils.toMillis(settings.getProperty(Config.TIMEOUT))
+
         while (!isSafe) {
+            if (System.currentTimeMillis() > timeout) {
+                failed = true
+                break
+            }
             location = getRandomLocation(user.location)
             if (isSafeBlock(location)) isSafe = true
+        }
+
+        if (failed) {
+            user.sendMessage(settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_FAILED))
+            return
         }
 
         if (settings.getProperty(Config.COOLDOWN_ENABLED)) {
@@ -48,7 +60,7 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
 
         if (settings.getProperty(Config.DELAY_ENABLED)) {
             if (!user.isAuthorized("rtp.bypass.delay")) {
-                delays.remove(user.uuid)
+                if (delays.contains(user.uuid)) return
                 user.sendMessage(
                     settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_IN_PROGRESS)
                         .replace("%delay%", settings.getProperty(Config.DELAY_TIME).toString())
