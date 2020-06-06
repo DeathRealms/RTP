@@ -12,13 +12,12 @@ class DelayListener(private val settings: CustomSettings) : Listener {
 
     @EventHandler
     fun PlayerMoveEvent.onPlayerMove() {
-        if (from.blockX != to?.blockX || from.blockZ != to?.blockZ || from.blockY != to?.blockY) {
-            val user = RealmsAPI.getUser(player)
-            val task = RTPCommand.delays[user.uuid] ?: return
-            task.cancel()
-            RTPCommand.delays.remove(user.uuid)
-            user.data.removeCooldown("rtp")
-            user.sendMessage(settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_CANCELLED))
-        }
+        if (from.block == to?.block) return
+        val user = RealmsAPI.getUser(player)
+        val task = RTPCommand.delays[user.uuid] ?: return
+        task.cancel()
+        RTPCommand.delays.remove(user.uuid)
+        user.data.removeCooldown("rtp")
+        user.sendMessage(settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_CANCELLED))
     }
 }

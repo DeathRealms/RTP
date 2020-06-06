@@ -27,37 +27,24 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     @Default
     @Permission("rtp.use")
     fun rtpCommand(user: User) {
-        var failed = false
-        var isSafe = false
+        if (user.data.hasCooldown("rtp") || delays.contains(user.uuid)) return
+
         var location = getRandomLocation(user.location)
         val timeout = System.currentTimeMillis() + Utils.toMillis(settings.getProperty(Config.TIMEOUT))
 
-        while (!isSafe) {
+        while (!isSafeBlock(location)) {
             if (System.currentTimeMillis() > timeout) {
-                failed = true
-                break
+                return user.sendMessage(settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_FAILED))
             }
-            if (user.data.hasCooldown("rtp") or delays.contains(user.uuid)) break
             location = getRandomLocation(user.location)
-            if (isSafeBlock(location)) isSafe = true
-        }
-
-        if (failed) {
-            user.sendMessage(settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_FAILED))
-            return
         }
 
         if (settings.getProperty(Config.COOLDOWN_ENABLED)) {
-            if (!user.isAuthorized("rtp.bypass.cooldown")) {
-                if (!user.data.hasCooldown("rtp")) {
-                    user.data.giveCooldown("rtp", settings.getProperty(Config.COOLDOWN_TIME))
-                } else {
-                    user.sendMessage(
-                        settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_COOLDOWN)
-                            .replace("%time%", user.data.getCooldown("rtp"))
-                    )
-                    return
-                }
+            if (!user.data.giveCooldown("rtp", settings.getProperty(Config.COOLDOWN_TIME), "rtp.bypass.cooldown")) {
+                return user.sendMessage(
+                    settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_COOLDOWN)
+                        .replace("%time%", user.data.getCooldown("rtp"))
+                )
             }
         }
 
