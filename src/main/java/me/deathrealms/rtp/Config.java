@@ -14,6 +14,8 @@ public class Config implements SettingsHolder {
     public static final Property<String> TELEPORT_CANCELLED = newProperty("messages.teleport-cancelled", "&cTeleportation cancelled.");
     public static final Property<String> TELEPORT_IN_PROGRESS = newProperty("messages.teleport-in-progress", "&fYou will be teleported in &c%delay% &fseconds.");
     public static final Property<String> TELEPORT_FAILED = newProperty("messages.teleport-failed", "&cCould not find a safe location to teleport to.");
+    public static final Property<String> NO_COOLDOWN = newProperty("messages.no-cooldown", "&f%player% &cis not currently on cooldown.");
+    public static final Property<String> COOLDOWN_RESET = newProperty("messages.cooldown-reset", "&aCooldown for &f%player% &ahas been reset.");
 
     @Comment("The amount of time in seconds it should wait to cancel the teleport if it can't find a safe location")
     public static final Property<Integer> TIMEOUT = newProperty("settings.timeout", 5);
