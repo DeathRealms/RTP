@@ -11,6 +11,7 @@ import me.mattstudios.mf.annotations.Default
 import me.mattstudios.mf.annotations.Permission
 import me.mattstudios.mf.base.CommandBase
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.Tag
 import org.bukkit.event.Listener
 import org.bukkit.scheduler.BukkitTask
@@ -26,8 +27,6 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     @Default
     @Permission("rtp.use")
     fun rtpCommand(user: User) {
-        if (user.data.hasCooldown("rtp") || user.uuid in delays) return
-
         var location = getRandomLocation(user.location)
         val timeout = System.currentTimeMillis() + Utils.toMillis(settings.getProperty(Config.TIMEOUT))
 
@@ -35,6 +34,8 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
             if (System.currentTimeMillis() > timeout) {
                 return user.sendMessage(settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_FAILED))
             }
+            if (user.data.hasCooldown("rtp")) break
+            if (user.uuid in delays) return
             location = getRandomLocation(user.location)
         }
 
@@ -49,7 +50,6 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
 
         if (settings.getProperty(Config.DELAY_ENABLED)) {
             if (!user.isAuthorized("rtp.bypass.delay")) {
-                if (delays.contains(user.uuid)) return
                 user.sendMessage(
                     settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_IN_PROGRESS)
                         .replace("%delay%", settings.getProperty(Config.DELAY_TIME).toString())
@@ -66,7 +66,7 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     }
 
     private fun User.teleportTo(location: Location) {
-        user.teleport(location.toCenterLocation())
+        user.teleport(location.toCenterLocation().add(0.0, 1.0, 0.0))
         user.sendMessage(
             settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_SUCCESSFUL)
                 .replace("%location%", "X: ${location.blockX} Y: ${location.blockY} Z: ${location.blockZ}")
@@ -84,6 +84,8 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     }
 
     private fun isSafeBlock(location: Location): Boolean {
-        return Tag.VALID_SPAWN.isTagged(location.block.type)
+        return Tag.VALID_SPAWN.isTagged(location.block.type) ||
+                Tag.SAND.isTagged(location.block.type) ||
+                location.block.type == Material.STONE
     }
 }
