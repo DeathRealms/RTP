@@ -6,6 +6,7 @@ import me.deathrealms.realmsapi.user.User
 import me.deathrealms.realmsapi.utils.LocationUtils
 import me.deathrealms.realmsapi.utils.Utils
 import me.deathrealms.rtp.Config
+import me.mattstudios.mf.annotations.Alias
 import me.mattstudios.mf.annotations.Command
 import me.mattstudios.mf.annotations.Default
 import me.mattstudios.mf.annotations.Permission
@@ -17,6 +18,7 @@ import org.bukkit.scheduler.BukkitTask
 import java.util.*
 
 @Command("rtp")
+@Alias("wild")
 class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener {
     companion object {
         val delays = mutableMapOf<UUID, BukkitTask>()
@@ -35,6 +37,7 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
                 failed = true
                 break
             }
+            if (user.data.hasCooldown("rtp") or delays.contains(user.uuid)) break
             location = getRandomLocation(user.location)
             if (isSafeBlock(location)) isSafe = true
         }
