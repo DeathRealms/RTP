@@ -3,7 +3,6 @@ package me.deathrealms.rtp.commands
 import me.deathrealms.realmsapi.RealmsAPI
 import me.deathrealms.realmsapi.files.CustomSettings
 import me.deathrealms.realmsapi.user.User
-import me.deathrealms.realmsapi.utils.LocationUtils
 import me.deathrealms.realmsapi.utils.Utils
 import me.deathrealms.rtp.Config
 import me.mattstudios.mf.annotations.Alias
@@ -27,7 +26,7 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     @Default
     @Permission("rtp.use")
     fun rtpCommand(user: User) {
-        if (user.data.hasCooldown("rtp") || delays.contains(user.uuid)) return
+        if (user.data.hasCooldown("rtp") || user.uuid in delays) return
 
         var location = getRandomLocation(user.location)
         val timeout = System.currentTimeMillis() + Utils.toMillis(settings.getProperty(Config.TIMEOUT))
@@ -67,7 +66,7 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     }
 
     private fun User.teleportTo(location: Location) {
-        user.teleport(LocationUtils.getCenteredLocation(location.add(0.0, 1.0, 0.0)))
+        user.teleport(location.toCenterLocation())
         user.sendMessage(
             settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_SUCCESSFUL)
                 .replace("%location%", "X: ${location.blockX} Y: ${location.blockY} Z: ${location.blockZ}")
@@ -80,7 +79,7 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     private fun getRandomLocation(location: Location): Location {
         val x = Utils.randomNumber(settings.getProperty(Config.minX), settings.getProperty(Config.maxX))
         val z = Utils.randomNumber(settings.getProperty(Config.minZ), settings.getProperty(Config.maxZ))
-        val y = location.world?.getHighestBlockYAt(x.toInt(), z.toInt())!!.toDouble()
+        val y = location.world.getHighestBlockYAt(x.toInt(), z.toInt()).toDouble()
         return Location(location.world, x, y, z, location.yaw, location.pitch)
     }
 

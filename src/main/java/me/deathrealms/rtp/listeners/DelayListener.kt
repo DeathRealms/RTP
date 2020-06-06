@@ -12,7 +12,7 @@ class DelayListener(private val settings: CustomSettings) : Listener {
 
     @EventHandler
     fun PlayerMoveEvent.onPlayerMove() {
-        if (from.block == to?.block) return
+        if (from.block == to.block) return
         val user = RealmsAPI.getUser(player)
         val task = RTPCommand.delays[user.uuid] ?: return
         task.cancel()
