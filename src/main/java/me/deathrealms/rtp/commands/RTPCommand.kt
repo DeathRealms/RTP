@@ -2,6 +2,7 @@ package me.deathrealms.rtp.commands
 
 import me.deathrealms.realmsapi.RealmsAPI
 import me.deathrealms.realmsapi.files.CustomSettings
+import me.deathrealms.realmsapi.items.ItemTag
 import me.deathrealms.realmsapi.user.User
 import me.deathrealms.realmsapi.utils.Utils
 import me.deathrealms.rtp.Config
@@ -11,8 +12,6 @@ import me.mattstudios.mf.annotations.Default
 import me.mattstudios.mf.annotations.Permission
 import me.mattstudios.mf.base.CommandBase
 import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.Tag
 import org.bukkit.event.Listener
 import org.bukkit.scheduler.BukkitTask
 import java.util.*
@@ -27,16 +26,16 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     @Default
     @Permission("rtp.use")
     fun rtpCommand(user: User) {
-        var location = getRandomLocation(user.location)
+        var location = user.location.getRandomLocation()
         val timeout = System.currentTimeMillis() + Utils.toMillis(settings.getProperty(Config.TIMEOUT))
 
-        while (!isSafeBlock(location)) {
+        while (!location.isSafeBlock()) {
             if (System.currentTimeMillis() > timeout) {
                 return user.sendMessage(settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_FAILED))
             }
             if (user.data.hasCooldown("rtp")) break
             if (user.uuid in delays) return
-            location = getRandomLocation(user.location)
+            location = user.location.getRandomLocation()
         }
 
         if (settings.getProperty(Config.COOLDOWN_ENABLED)) {
@@ -76,16 +75,14 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
         )
     }
 
-    private fun getRandomLocation(location: Location): Location {
+    private fun Location.getRandomLocation(): Location {
         val x = Utils.randomNumber(settings.getProperty(Config.minX), settings.getProperty(Config.maxX))
         val z = Utils.randomNumber(settings.getProperty(Config.minZ), settings.getProperty(Config.maxZ))
-        val y = location.world.getHighestBlockYAt(x.toInt(), z.toInt()).toDouble()
-        return Location(location.world, x, y, z, location.yaw, location.pitch)
+        val y = world.getHighestBlockYAt(x.toInt(), z.toInt()).toDouble()
+        return Location(world, x, y, z, yaw, pitch)
     }
 
-    private fun isSafeBlock(location: Location): Boolean {
-        return Tag.VALID_SPAWN.isTagged(location.block.type) ||
-                Tag.SAND.isTagged(location.block.type) ||
-                location.block.type == Material.STONE
+    private fun Location.isSafeBlock(): Boolean {
+        return ItemTag.VALID_SPAWN.isTagged(block.type)
     }
 }
