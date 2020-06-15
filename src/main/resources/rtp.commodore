@@ -1,0 +1,6 @@
+rtp {
+  reload;
+  reset {
+    user brigadier:string single_word;
+  }
+}
