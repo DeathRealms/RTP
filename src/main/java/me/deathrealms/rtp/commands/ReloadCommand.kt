@@ -18,7 +18,7 @@ class ReloadCommand(private val settings: CustomSettings) : CommandBase() {
     @PlayerAndConsole
     fun reloadCommand(source: CommandSource) {
         settings.reload()
-        source.sendMessage(settings.getProperty(Config.PREFIX) + "&7You have reloaded all configuration files.")
+        source.sendMessage(settings[Config.PREFIX] + "&7You have reloaded all configuration files.")
         if (source.isPlayer) {
             source.user.playSound(XSound.BLOCK_NOTE_BLOCK_PLING)
         }

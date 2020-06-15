@@ -18,6 +18,6 @@ class DelayListener(private val settings: CustomSettings) : Listener {
         task.cancel()
         RTPCommand.delays.remove(user.uuid)
         user.data.removeCooldown("rtp")
-        user.sendMessage(settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_CANCELLED))
+        user.sendMessage(settings[Config.PREFIX] + settings[Config.TELEPORT_CANCELLED])
     }
 }

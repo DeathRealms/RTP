@@ -18,14 +18,14 @@ class ResetCommand(private val settings: CustomSettings) : CommandBase() {
     fun resetCommand(source: CommandSource, player: String) {
         val offlinePlayer = Bukkit.getOfflinePlayer(player)
         if (!offlinePlayer.hasPlayedBefore()) {
-            source.sendMessage(settings.getProperty(Config.PREFIX) + "&cCould not find player")
+            source.sendMessage(settings[Config.PREFIX] + "&cCould not find player")
             return
         }
         val target = RealmsAPI.getUser(offlinePlayer)
 
         if (!target.data.hasCooldown("rtp")) {
             source.sendMessage(
-                settings.getProperty(Config.PREFIX) + settings.getProperty(Config.NO_COOLDOWN)
+                settings[Config.PREFIX] + settings[Config.NO_COOLDOWN]
                     .replace("%player%", target.name)
             )
             return
@@ -33,7 +33,7 @@ class ResetCommand(private val settings: CustomSettings) : CommandBase() {
 
         target.data.removeCooldown("rtp")
         source.sendMessage(
-            settings.getProperty(Config.PREFIX) + settings.getProperty(Config.COOLDOWN_RESET)
+            settings[Config.PREFIX] + settings[Config.COOLDOWN_RESET]
                 .replace("%player%", target.name)
         )
     }

@@ -6,10 +6,7 @@ import me.deathrealms.realmsapi.items.ItemTag
 import me.deathrealms.realmsapi.user.User
 import me.deathrealms.realmsapi.utils.Utils
 import me.deathrealms.rtp.Config
-import me.mattstudios.mf.annotations.Alias
-import me.mattstudios.mf.annotations.Command
-import me.mattstudios.mf.annotations.Default
-import me.mattstudios.mf.annotations.Permission
+import me.mattstudios.mf.annotations.*
 import me.mattstudios.mf.base.CommandBase
 import org.bukkit.Location
 import org.bukkit.event.Listener
@@ -25,38 +22,39 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
 
     @Default
     @Permission("rtp.use")
+    @Description("Teleports you to a random location.")
     fun rtpCommand(user: User) {
         var location = user.location.getRandomLocation()
-        val timeout = System.currentTimeMillis() + Utils.toMillis(settings.getProperty(Config.TIMEOUT))
+        val timeout = System.currentTimeMillis() + Utils.toMillis(settings[Config.TIMEOUT])
 
         while (!location.isSafeBlock()) {
             if (System.currentTimeMillis() > timeout) {
-                return user.sendMessage(settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_FAILED))
+                return user.sendMessage(settings[Config.PREFIX] + settings[Config.TELEPORT_FAILED])
             }
             if (user.data.hasCooldown("rtp")) break
             if (user.uuid in delays) return
             location = user.location.getRandomLocation()
         }
 
-        if (settings.getProperty(Config.COOLDOWN_ENABLED)) {
-            if (!user.data.giveCooldown("rtp", settings.getProperty(Config.COOLDOWN_TIME), "rtp.bypass.cooldown")) {
+        if (settings[Config.COOLDOWN_ENABLED]) {
+            if (!user.data.giveCooldown("rtp", settings[Config.COOLDOWN_TIME], "rtp.bypass.cooldown")) {
                 return user.sendMessage(
-                    settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_COOLDOWN)
+                    settings[Config.PREFIX] + settings[Config.TELEPORT_COOLDOWN]
                         .replace("%time%", user.data.getCooldown("rtp"))
                 )
             }
         }
 
-        if (settings.getProperty(Config.DELAY_ENABLED)) {
+        if (settings[Config.DELAY_ENABLED]) {
             if (!user.isAuthorized("rtp.bypass.delay")) {
                 user.sendMessage(
-                    settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_IN_PROGRESS)
-                        .replace("%delay%", settings.getProperty(Config.DELAY_TIME).toString())
+                    settings[Config.PREFIX] + settings[Config.TELEPORT_IN_PROGRESS]
+                        .replace("%delay%", settings[Config.DELAY_TIME].toString())
                 )
                 delays[user.uuid] = RealmsAPI.runTask(false, {
                     user.teleportTo(location)
                     delays.remove(user.uuid)
-                }, (settings.getProperty(Config.DELAY_TIME) * 20).toLong())
+                }, (settings[Config.DELAY_TIME] * 20).toLong())
                 return
             }
         }
@@ -65,9 +63,9 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     }
 
     private fun User.teleportTo(location: Location) {
-        user.teleport(location.toCenterLocation().add(0.0, 1.0, 0.0))
-        user.sendMessage(
-            settings.getProperty(Config.PREFIX) + settings.getProperty(Config.TELEPORT_SUCCESSFUL)
+        teleport(location.toCenterLocation().add(0.0, 1.0, 0.0))
+        sendMessage(
+            settings[Config.PREFIX] + settings[Config.TELEPORT_SUCCESSFUL]
                 .replace("%location%", "X: ${location.blockX} Y: ${location.blockY} Z: ${location.blockZ}")
                 .replace("%x%", "${location.blockX}")
                 .replace("%y%", "${location.blockY}")
@@ -76,8 +74,8 @@ class RTPCommand(private val settings: CustomSettings) : CommandBase(), Listener
     }
 
     private fun Location.getRandomLocation(): Location {
-        val x = Utils.randomNumber(settings.getProperty(Config.minX), settings.getProperty(Config.maxX))
-        val z = Utils.randomNumber(settings.getProperty(Config.minZ), settings.getProperty(Config.maxZ))
+        val x = Utils.randomNumber(settings[Config.minX], settings[Config.maxX])
+        val z = Utils.randomNumber(settings[Config.minZ], settings[Config.maxZ])
         val y = world.getHighestBlockYAt(x.toInt(), z.toInt()).toDouble()
         return Location(world, x, y, z, yaw, pitch)
     }
